@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexusAI Tutor</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      background: white;
+      padding: 30px;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    p {
+      text-align: center;
+      color: #666;
+    }
+
+    textarea {
+      width: 100%;
+      height: 160px;
+      padding: 15px;
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      resize: none;
+      font-size: 16px;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 15px;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #667eea;
+      color: white;
+      font-size: 17px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #5568d8;
+    }
+
+    button:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+
+    .response-box {
+      margin-top: 25px;
+      padding: 18px;
+      background: #f5f5f5;
+      border-radius: 12px;
+      min-height: 80px;
+      white-space: pre-wrap;
+      color: #222;
+      line-height: 1.5;
+    }
+
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>NexusAI Tutor</h1>
+    <p>Enter any topic and get a short simple explanation.</p>
+
+    <textarea id="userPrompt" placeholder="Example: Explain cross attention in VLM..."></textarea>
+
+    <button id="submitBtn" onclick="runTask()">Ask NexusAI</button>
+
+    <div class="response-box" id="responseBox">
+      Your answer will appear here...
+    </div>
+  </div>
+
+  <script>
+    async function runTask() {
+      const userPrompt = document.getElementById("userPrompt").value.trim();
+      const responseBox = document.getElementById("responseBox");
+      const submitBtn = document.getElementById("submitBtn");
+
+      if (!userPrompt) {
+        responseBox.innerHTML = "<span class='error'>Please enter a prompt.</span>";
+        return;
+      }
+
+      responseBox.textContent = "Thinking...";
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch("https://fastapi-chatbot-bootcamp.onrender.com/run_task/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            user_prompt: userPrompt
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.response) {
+          responseBox.textContent = data.response;
+        } else {
+          responseBox.innerHTML = "<span class='error'>" + (data.error || "Something went wrong") + "</span>";
+        }
+
+      } catch (error) {
+        responseBox.innerHTML = "<span class='error'>Backend not connected. Check your API URL.</span>";
+      }
+
+      submitBtn.disabled = false;
+    }
+  </script>
+</body>
+</html>
